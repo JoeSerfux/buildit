@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>buildIt admin – requests</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   Admin page styles. Colors are at the top, same idea as site.css.
+   Status colors: the pill classes near the middle (.pill.new, .won ...).
+   A new status in site.config.js gets the plain pill style unless you
+   add a line like  .pill.waiting { ... }  here.
+   ===================================================================== */
+:root { --bg: #fff; --surface: #fff; --ink: #16266b; --muted: #5a6a94; --line: #dfe5f8; --blue: #4f6cff; --soft: #eef2ff; --onblue: #fff; color-scheme: light; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #0f1626; --surface: #18223a; --ink: #eef1f8; --muted: #9aa7c2; --line: #2b3858; --blue: #6f8dff; --soft: #1d2a4a; --onblue: #0f1626; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; color: var(--ink); font: 400 16px/1.5 "IBM Plex Sans", system-ui, sans-serif;
+  background: radial-gradient(50% 520px at 0% 0%, rgba(107, 134, 255, .35), transparent 72%) no-repeat, var(--bg); }
+h1, h2, h3 { font-family: "Bricolage Grotesque", "IBM Plex Sans", sans-serif; margin: 0; letter-spacing: -.02em; }
+.wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+
+/* buttons and inputs */
+.btn { background: var(--blue); color: var(--onblue); border: 0; border-radius: 10px; padding: 10px 18px; font: 500 15px "IBM Plex Sans", sans-serif; cursor: pointer; text-decoration: none; display: inline-block; }
+.btn.ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--line); }
+.btn.danger { background: transparent; color: #c62828; border: 1.5px solid #f1c4c4; }
+.btn.block { width: 100%; margin-top: 6px; }
+input, select, textarea { font: inherit; color: var(--ink); background: var(--surface); border: 1.5px solid var(--line); border-radius: 10px; padding: 10px 12px; width: 100%; }
+
+/* login */
+.login { max-width: 380px; margin: 14vh auto; background: var(--surface); border: 1.5px solid var(--line); border-radius: 22px; padding: 34px; box-shadow: 0 30px 60px -36px rgba(79, 108, 255, .6); }
+.login h1 { font-size: 30px; margin: 14px 0 6px; }
+.login p { color: var(--muted); margin: 0 0 20px; }
+.err { color: #c62828; min-height: 22px; margin: 10px 0 0; font-size: 14px; }
+[hidden] { display: none !important; }
+
+/* top of the page */
+header { display: flex; justify-content: space-between; align-items: center; padding: 22px 0; gap: 12px; flex-wrap: wrap; }
+.logo { font: 800 26px "Bricolage Grotesque", sans-serif; }
+.logo b { color: var(--blue); }
+.logo .sub { font: 500 16px "IBM Plex Sans", sans-serif; color: var(--muted); }
+.head-actions { display: flex; gap: 8px; }
+
+/* numbers, tabs, search */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin: 6px 0 22px; }
+.stat { background: var(--surface); border: 1.5px solid var(--line); border-radius: 18px; padding: 18px 20px; }
+.stat strong { display: block; font: 800 34px "Bricolage Grotesque", sans-serif; color: var(--blue); }
+.stat span { color: var(--muted); font-size: 14px; }
+.bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
+.tab { background: transparent; border: 1.5px solid var(--line); color: var(--ink); border-radius: 99px; padding: 7px 15px; font: 500 14px "IBM Plex Sans", sans-serif; cursor: pointer; }
+.tab[aria-pressed="true"] { background: var(--blue); border-color: var(--blue); color: var(--onblue); }
+.search { max-width: 240px; }
+
+/* one request */
+.item { background: var(--surface); border: 1.5px solid var(--line); border-radius: 18px; margin-bottom: 12px; overflow: hidden; }
+.row { display: grid; grid-template-columns: 1.2fr 1.4fr .8fr auto; gap: 14px; align-items: center; padding: 16px 20px; cursor: pointer; width: 100%; text-align: left; background: none; border: 0; color: inherit; font: inherit; }
+.row:hover { background: var(--soft); }
+.row small { display: block; color: var(--muted); }
+.detail { display: none; padding: 4px 20px 20px; border-top: 1px solid var(--line); }
+.item.open .detail { display: block; }
+.msg { white-space: pre-wrap; background: var(--soft); border-radius: 12px; padding: 14px 16px; margin: 14px 0; }
+.meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; color: var(--muted); font-size: 14px; }
+.meta b { color: var(--ink); font-weight: 500; }
+.note { margin-top: 14px; }
+.acts { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; align-items: center; }
+.acts select { width: auto; }
+.empty { text-align: center; color: var(--muted); padding: 50px 0; }
+
+/* status colors */
+.pill { display: inline-block; padding: 3px 12px; border-radius: 99px; font-size: 13px; font-weight: 500; background: var(--soft); color: var(--blue); }
+.pill.new { background: var(--blue); color: var(--onblue); }
+.pill.won { background: #dff7e8; color: #16794a; }
+.pill.lost { background: #eceef4; color: #6a7392; }
+
+@media (max-width: 720px) {
+  .row { grid-template-columns: 1fr auto; }
+  .row > :nth-child(2), .row > :nth-child(3) { grid-column: 1 / -1; }
+}
+
+</style>
+</head>
+
+<body>
+<div id="login" class="login" hidden>
+  <div class="logo">build<b>It</b></div>
+  <h1>Admin login</h1>
+  <p>See and manage your client requests.</p>
+  <input id="em" type="email" placeholder="Email" aria-label="Email" autocomplete="username">
+  <input id="pw" type="password" placeholder="Password" aria-label="Password" autocomplete="current-password">
+  <div class="err" id="login-error" role="alert"></div>
+  <button class="btn block" id="login-go">Log in</button>
+</div>
+
+<div id="app" class="wrap" hidden>
+  <header>
+    <div class="logo">build<b>It</b> <span class="sub">requests</span></div>
+    <div class="head-actions"><button class="btn ghost" id="export">Download CSV</button><button class="btn ghost" id="logout">Log out</button></div>
+  </header>
+  <div class="stats" id="stats"></div>
+  <div class="bar">
+    <div class="tabs" id="tabs"></div>
+    <input class="search" id="search" placeholder="Search name, email, message" aria-label="Search">
+  </div>
+  <div id="list"></div>
+</div>
+<script src="supabase-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const CFG = window.BUILDIT_CONFIG;
+  const TABLE = 'buildit_requests';
+  const STATUSES = ['new', 'contacted', 'won', 'lost'];
+  const META = [{ key: 'budget', label: 'Budget' }, { key: 'plan', label: 'Plan' }];
+  const REPLY_SUBJECT = 'Your buildIt request';
+  if (!CFG || CFG.SUPABASE_URL.includes('YOUR-PROJECT')) {
+    document.body.innerHTML = '<p style="padding:24px;font-family:sans-serif">Open <b>supabase-config.js</b> and paste your Supabase URL and anon key first.</p>';
+    return;
+  }
+  const sb = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
+  let requests = [], filter = 'all', openId = null;
+
+  function el(tag, props, ...kids) {
+    const e = document.createElement(tag);
+    Object.assign(e, props || {});
+    kids.flat().forEach(k => e.append(k));
+    return e;
+  }
+  const cap = s => s[0].toUpperCase() + s.slice(1);
+  const formatDate = s => new Date(s).toLocaleString(undefined, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+  function showLogin() { $('app').hidden = true; $('login').hidden = false; }
+
+  $('login-go').onclick = async () => {
+    $('login-error').textContent = '';
+    const { error } = await sb.auth.signInWithPassword({ email: $('em').value.trim(), password: $('pw').value });
+    if (error) { $('login-error').textContent = error.message; return; }
+    $('pw').value = '';
+    load();
+  };
+  $('pw').onkeydown = e => { if (e.key === 'Enter') $('login-go').click(); };
+  $('logout').onclick = async () => { await sb.auth.signOut(); requests = []; showLogin(); };
+  $('search').oninput = draw;
+  $('export').onclick = exportCsv;
+
+  async function load() {
+    const { data: s } = await sb.auth.getSession();
+    if (!s.session) return showLogin();
+    const { data, error } = await sb.from(TABLE).select('*').order('created_at', { ascending: false });
+    if (error) { alert(error.message); return showLogin(); }
+    requests = data;
+    $('login').hidden = true; $('app').hidden = false;
+    document.title = (requests.filter(r => r.status === 'new').length ? '(' + requests.filter(r => r.status === 'new').length + ') ' : '') + 'buildIt admin – requests';
+    draw();
+  }
+
+  function draw() {
+    const stats = $('stats'); stats.replaceChildren();
+    [['Total', requests.length], ...STATUSES.map(s => [cap(s), requests.filter(r => r.status === s).length])]
+      .forEach(([label, n]) => stats.append(el('div', { className: 'stat' }, el('strong', { textContent: n }), el('span', { textContent: label }))));
+
+    const tabs = $('tabs'); tabs.replaceChildren();
+    ['all', ...STATUSES].forEach(t => {
+      const b = el('button', { className: 'tab', textContent: cap(t) });
+      b.setAttribute('aria-pressed', filter === t);
+      b.onclick = () => { filter = t; draw(); };
+      tabs.append(b);
+    });
+
+    const q = $('search').value.toLowerCase().trim();
+    const shown = requests.filter(r =>
+      (filter === 'all' || r.status === filter) &&
+      (!q || [r.name, r.email, r.phone, r.message, r.plan].join(' ').toLowerCase().includes(q)));
+
+    const list = $('list'); list.replaceChildren();
+    if (!shown.length) {
+      list.append(el('div', { className: 'empty', textContent: requests.length ? 'No requests match.' : 'No requests yet. They will appear here when someone uses the contact form.' }));
+      return;
+    }
+    shown.forEach(r => list.append(card(r)));
+  }
+
+  function card(r) {
+    const item = el('div', { className: 'item' + (openId === r.id ? ' open' : '') });
+    const row = el('button', { className: 'row' },
+      el('div', {}, el('strong', { textContent: r.name }), el('small', { textContent: formatDate(r.created_at) })),
+      el('div', {}, el('span', { textContent: r.email }), el('small', { textContent: r.phone || 'No phone' })),
+      el('div', { textContent: r.budget || 'No budget' }),
+      el('span', { className: 'pill ' + r.status, textContent: cap(r.status) }));
+    row.onclick = () => { openId = openId === r.id ? null : r.id; draw(); };
+
+    const status = el('select'); status.setAttribute('aria-label', 'Status');
+    STATUSES.forEach(s => status.append(el('option', { value: s, textContent: cap(s), selected: s === r.status })));
+    const note = el('textarea', { rows: 2, value: r.note || '', placeholder: 'Private note (only you see this)' });
+
+    const save = el('button', { className: 'btn', textContent: 'Save' });
+    save.onclick = async () => {
+      const { data, error } = await sb.from(TABLE).update({ status: status.value, note: note.value }).eq('id', r.id).select().single();
+      if (error) return alert(error.message);
+      Object.assign(r, data); draw();
+    };
+    const del = el('button', { className: 'btn danger', textContent: 'Delete' });
+    del.onclick = async () => {
+      if (!confirm('Delete this request for good?')) return;
+      const { error } = await sb.from(TABLE).delete().eq('id', r.id);
+      if (error) return alert(error.message);
+      requests = requests.filter(x => x.id !== r.id); draw();
+    };
+
+    const reply = el('a', { className: 'btn ghost', textContent: 'Reply by email',
+      href: 'mailto:' + encodeURIComponent(r.email).replace('%40', '@') + '?subject=' + encodeURIComponent(REPLY_SUBJECT) });
+    const actions = el('div', { className: 'acts' }, status, save, reply);
+    const digits = (r.phone || '').replace(/[^0-9]/g, '');
+    if (digits) actions.append(
+      el('a', { className: 'btn ghost', textContent: 'WhatsApp', href: 'https://wa.me/' + digits, target: '_blank', rel: 'noopener' }),
+      el('a', { className: 'btn ghost', textContent: 'Call', href: 'tel:+' + digits }));
+    actions.append(del);
+
+    const meta = el('div', { className: 'meta' }, META.map(f => el('span', {}, f.label + ': ', el('b', { textContent: r[f.key] || 'Not given' }))));
+    item.append(row, el('div', { className: 'detail' },
+      el('div', { className: 'msg', textContent: r.message }), meta, el('div', { className: 'note' }, note), actions));
+    return item;
+  }
+
+  function exportCsv() {
+    const cols = ['created_at', 'status', 'name', 'email', 'phone', 'budget', 'plan', 'message', 'note'];
+    const cell = v => { v = String(v ?? ''); if (/^[=+\-@\t\r]/.test(v)) v = "'" + v; return '"' + v.replace(/"/g, '""') + '"'; };
+    const csv = '\ufeff' + [cols.join(','), ...requests.map(r => cols.map(c => cell(r[c])).join(','))].join('\r\n');
+    const a = el('a', { href: URL.createObjectURL(new Blob([csv], { type: 'text/csv' })), download: 'buildit-requests.csv' });
+    a.click(); URL.revokeObjectURL(a.href);
+  }
+
+  // live updates + load on open
+  sb.channel('req').on('postgres_changes', { event: '*', schema: 'public', table: TABLE }, () => load()).subscribe();
+  load();
+})();
+
+</script>
+</body>
+</html>

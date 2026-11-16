@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nest &amp; Co – home goods</title>
+<meta name="description" content="Sample project by buildIt: an online store with a working cart, live stock, and checkout.">
+<meta name="theme-color" content="#c4502c">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23c4502c'/%3E%3Cpath d='M8 21l12-10 12 10M12 19v11h16V19' stroke='white' stroke-width='3.500' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="demo.css">
+<style>
+/* THEME: this demo's own colors and fonts */
+:root{--rgb:196,80,44;--bg:#fdf6ee;--surface:#fffdf9;--ink:#3a2418;--muted:#8a6f5d;--line:#ecdccb;--blue:#c4502c;--onblue:#fff;--sun:#f6cf9b;--dark:#b8431f;--b1:#e98a5f;--b2:#b8431f;--bd1:#d9673c;--bd2:#a63a1a;--fh:"Fraunces",Georgia,serif;--fb:"DM Sans",system-ui,sans-serif}
+.hero h1,h2{letter-spacing:-.02em}
+</style>
+<style>
+.nav { position: sticky; top: 38px; z-index: 50; background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+.nav .wrap { display: flex; justify-content: space-between; align-items: center; height: 64px; }
+.logo { font: 800 25px var(--fh); text-decoration: none; display: inline-flex; align-items: center; gap: 9px; }
+.logo svg { width: 36px; height: 36px; }
+.logo b { color: var(--blue); }
+.nav nav { display: flex; gap: 24px; align-items: center; font-size: 15px; }
+.nav nav a { text-decoration: none; color: var(--muted); }
+.nav nav a:hover { color: var(--ink); }
+.cartbtn { position: relative; display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); font: 500 15px var(--fb); cursor: pointer; transition: border-color .2s, transform .15s; }
+.cartbtn:hover { border-color: var(--blue); transform: translateY(-2px); }
+.cartbtn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.cartbtn .n { min-width: 22px; height: 22px; padding: 0 6px; border-radius: 99px; display: grid; place-items: center; font-size: 12px; font-weight: 500; background: var(--blue); color: var(--onblue); }
+.cartbtn.bump { animation: bump .45s cubic-bezier(.3,1.6,.5,1); }
+@keyframes bump { 40% { transform: scale(1.14); } }
+
+.hero { display: grid; grid-template-columns: 1fr 1.05fr; gap: 50px; align-items: center; padding: 70px 0; position: relative; }
+.hero::before { content: ""; position: absolute; inset: 0 -22px; z-index: -1; pointer-events: none; background: radial-gradient(rgba(var(--rgb),.32) 1px, transparent 1.6px) 0 0 / 7px 7px; -webkit-mask: linear-gradient(90deg, #000, transparent 42%); mask: linear-gradient(90deg, #000, transparent 42%); }
+.hero h1 { font-size: clamp(40px, 5.4vw, 70px); font-weight: 800; }
+.hero p { color: var(--muted); font-size: 20px; max-width: 28em; margin: 22px 0 28px; }
+.cta { display: flex; gap: 12px; flex-wrap: wrap; }
+.proof { margin-top: 26px; display: flex; gap: 18px; flex-wrap: wrap; font-size: 15px; color: var(--muted); }
+.proof i { font-style: normal; color: var(--blue); font-weight: 500; }
+.stage { position: relative; height: 420px; }
+.blob { position: absolute; inset: 20px 10px; border-radius: 42% 58% 55% 45% / 50% 45% 55% 50%; background: linear-gradient(140deg, var(--bd1), var(--bd2)); animation: morph 12s ease-in-out infinite alternate; box-shadow: 0 50px 90px -40px rgba(36,52,130,.65); }
+@keyframes morph { 50% { border-radius: 58% 42% 40% 60% / 45% 58% 42% 55%; } 100% { border-radius: 45% 55% 60% 40% / 58% 42% 58% 42%; } }
+.stage .it { position: absolute; width: 150px; height: 150px; border-radius: 30px; display: grid; place-items: center; background: var(--surface); border: 1.5px solid var(--line); box-shadow: 0 24px 40px -20px rgba(20,33,61,.5); animation: float 5s ease-in-out infinite; }
+.stage .it svg { width: 96px; height: 96px; }
+.stage .i1 { left: 6%; top: 8%; } .stage .i2 { right: 4%; top: 30%; animation-delay: -1.7s; } .stage .i3 { left: 26%; bottom: 0; animation-delay: -3.2s; }
+.chip { position: absolute; right: 22%; top: 2%; background: var(--surface); border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 14px; font-size: 14px; font-weight: 500; box-shadow: 0 14px 30px -14px rgba(20,33,61,.5); display: flex; gap: 8px; align-items: center; animation: float 5s ease-in-out infinite -2s; }
+.chip::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: #3ac98a; }
+
+.mq { border-block: 1px solid var(--line); overflow: hidden; padding: 16px 0; background: var(--surface); -webkit-mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent); mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent); }
+.mq div { display: flex; gap: 46px; width: max-content; animation: slide 30s linear infinite; font: 600 22px var(--fh); color: var(--muted); }
+.mq span::after { content: "✦"; color: var(--sun); margin-left: 46px; }
+@keyframes slide { to { transform: translateX(-50%); } }
+
+section { padding: 88px 0; }
+.shophead { text-align: center; }
+.cats { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 28px 0 40px; }
+.pill { font: 500 15px var(--fb); color: var(--ink); cursor: pointer; padding: 9px 18px; border-radius: 99px; border: 1.5px solid var(--line); background: var(--surface); transition: transform .15s, background .2s, border-color .2s; }
+.pill:hover { transform: translateY(-2px); border-color: var(--blue); }
+.pill[aria-pressed="true"] { background: var(--blue); border-color: var(--blue); color: var(--onblue); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+.prod { padding: 0; overflow: hidden; display: flex; flex-direction: column; animation: pop .45s cubic-bezier(.3,1.3,.5,1) both; }
+.pic { position: relative; height: 200px; display: grid; place-items: center; transition: background .3s; }
+.pic svg { width: 120px; height: 120px; transition: transform .4s cubic-bezier(.3,1.6,.5,1); }
+.prod:hover .pic svg { transform: scale(1.12) rotate(-5deg); }
+.badge { position: absolute; top: 14px; left: 14px; font-size: 12.5px; font-weight: 500; padding: 4px 12px; border-radius: 99px; background: #fff; color: var(--bd2); box-shadow: 0 8px 16px -8px rgba(20,33,100,.5); }
+.badge.low { color: #c23b40; }
+.pbody { padding: 20px 22px 22px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.pbody h3 { font-size: 21px; }
+.pbody p { margin: 0; color: var(--muted); font-size: 15px; }
+.pfoot { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 16px; }
+.price { font: 800 24px var(--fh); letter-spacing: -.02em; }
+.price s { font: 400 14px var(--fb); color: var(--muted); margin-left: 6px; }
+.add { padding: 10px 18px; font-size: 15px; }
+.stock { font-size: 13px; color: var(--muted); padding-top: 6px; }
+
+.dark { position: relative; overflow: hidden; margin: 0 12px; border-radius: 36px; color: #fff; padding: 64px 0; background: linear-gradient(140deg, var(--dark), color-mix(in srgb, var(--dark) 68%, #9bb0ff)); }
+.dark::before { content: ""; position: absolute; width: 520px; height: 520px; right: -140px; top: -180px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,.32), transparent 68%); animation: drift 15s ease-in-out infinite alternate; pointer-events: none; }
+@keyframes drift { to { transform: translate(-90px, 50px) scale(1.25); } }
+.dark .wrap { position: relative; }
+.perks { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 18px; margin-top: 40px; }
+.perk { padding: 24px; border-radius: 22px; background: rgba(255,255,255,.12); border: 1.5px solid rgba(255,255,255,.3); }
+.perk h3 { font-size: 21px; margin-bottom: 6px; }
+.perk p { margin: 0; color: #fbe6d6; font-size: 15.5px; }
+.perk .ico { background: rgba(255,255,255,.2); box-shadow: none; }
+
+.final { position: relative; overflow: hidden; margin: 0 0 70px; padding: 64px 40px; border-radius: 36px; text-align: center; color: #fff; background: linear-gradient(140deg, var(--bd1), var(--bd2)); }
+.final h2 { margin-bottom: 14px; }
+.final p { opacity: .92; margin: 0 auto 24px; font-size: 19px; max-width: 30em; }
+.sub { display: flex; gap: 8px; max-width: 440px; margin: 0 auto; }
+.sub input { flex: 1; min-width: 0; padding: 14px 18px; border-radius: 12px; border: 0; font: 400 16px var(--fb); }
+footer { padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+
+/* cart drawer */
+.shade { position: fixed; inset: 0; z-index: 150; background: rgba(15,22,60,.45); opacity: 0; visibility: hidden; transition: opacity .25s, visibility .25s; }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; z-index: 160; width: min(430px, 100vw); display: flex; flex-direction: column; background: var(--surface); box-shadow: -30px 0 70px -30px rgba(10,20,80,.5); transform: translateX(105%); transition: transform .35s cubic-bezier(.2,.8,.2,1); }
+body.cart-open .shade { opacity: 1; visibility: visible; }
+body.cart-open .drawer { transform: none; }
+.dh { display: flex; justify-content: space-between; align-items: center; padding: 20px 22px; color: #fff; background: linear-gradient(140deg, var(--bd1), var(--bd2)); }
+.dh h3 { font-size: 22px; }
+.dh button { border: 0; cursor: pointer; width: 34px; height: 34px; border-radius: 50%; color: #fff; background: rgba(255,255,255,.18); font-size: 20px; }
+.ship { padding: 14px 22px; border-bottom: 1px solid var(--line); font-size: 14.5px; }
+.ship .meter { height: 8px; border-radius: 8px; background: var(--line); margin-top: 8px; overflow: hidden; }
+.ship .meter i { display: block; height: 100%; width: 0; border-radius: 8px; background: linear-gradient(90deg, var(--b1), var(--blue)); transition: width .5s cubic-bezier(.2,.8,.2,1); }
+.items { flex: 1; overflow-y: auto; padding: 8px 22px; }
+.line { display: grid; grid-template-columns: 64px 1fr auto; gap: 14px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line); animation: pop .35s cubic-bezier(.3,1.4,.5,1); }
+.line .th { width: 64px; height: 64px; border-radius: 16px; display: grid; place-items: center; }
+.line .th svg { width: 40px; height: 40px; }
+.line b { font-weight: 500; display: block; font-size: 16px; }
+.line small { color: var(--muted); }
+.qty { display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; border: 1.5px solid var(--line); border-radius: 99px; }
+.qty button { width: 28px; height: 28px; border: 0; background: none; color: var(--ink); font-size: 17px; cursor: pointer; border-radius: 50%; }
+.qty button:hover { background: color-mix(in srgb, var(--blue) 12%, var(--surface)); }
+.qty span { min-width: 20px; text-align: center; font-size: 15px; font-weight: 500; }
+.line .lp { font-weight: 500; text-align: right; }
+.line .rm { display: block; margin-top: 8px; border: 0; background: none; color: var(--muted); font-size: 13px; cursor: pointer; text-decoration: underline; }
+.empty { text-align: center; color: var(--muted); padding: 60px 10px; }
+.df { padding: 18px 22px 22px; border-top: 1.5px solid var(--line); }
+.df .r { display: flex; justify-content: space-between; padding: 4px 0; color: var(--muted); font-size: 15px; }
+.df .r.t { color: var(--ink); font: 800 24px var(--fh); padding-top: 10px; }
+.df .btn { width: 100%; margin-top: 14px; }
+.ok { text-align: center; padding: 50px 22px; animation: pop .4s cubic-bezier(.3,1.4,.5,1); }
+.ok .tick { width: 84px; height: 84px; margin: 0 auto 18px; border-radius: 50%; display: grid; place-items: center; color: #fff; background: linear-gradient(135deg, #5fe0a8, #2bb673); box-shadow: 0 18px 30px -12px #2bb673; }
+.ok .tick svg { width: 42px; height: 42px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 40; stroke-dashoffset: 40; animation: draw .6s ease .3s forwards; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+.ok h3 { font-size: 26px; margin-bottom: 8px; }
+.ok p { color: var(--muted); margin: 0 0 20px; }
+
+@media (max-width: 880px) {
+  .hero { grid-template-columns: 1fr; padding-top: 36px; }
+  .nav nav a:not(.cartbtn) { display: none; }
+  .stage { height: 340px; } .stage .it { width: 120px; height: 120px; } .stage .it svg { width: 76px; height: 76px; }
+  section { padding: 64px 0; }
+  .final { padding: 44px 20px; }
+}
+</style>
+</head>
+<body>
+<div class="demo-bar"><span>This is a sample project built by buildIt. Add things to the cart and try checkout.</span><div class="r"><a href="../index.html#work">← Back to buildIt</a><a href="../index.html#contact">Start yours</a></div></div>
+
+<div class="nav"><div class="wrap">
+  <a class="logo" href="#top"><svg viewBox="0 0 40 40" aria-hidden="true"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d9673c"/><stop offset="1" stop-color="#a63a1a"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#g)"/><path d="M8 21l12-10 12 10M12 19v11h16V19" stroke="#fff" stroke-width="3.500" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Nest<b>&amp;Co</b></span></a>
+  <nav><a href="#shop">Shop</a><a href="#why">Why Nest</a><a href="#news">Newsletter</a>
+    <button class="cartbtn" id="open-cart" type="button" aria-label="Open cart"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 0 1 6 0"/></svg>Cart <span class="n" id="count">0</span></button>
+  </nav>
+</div></div>
+
+<main>
+<div class="wrap" id="top"><div class="hero">
+  <div>
+    <h1 class="enter">Make home <span class="hl-word shim">feel like yours.</span></h1>
+    <p class="enter" style="--rd:.15s">Small pieces that change a whole room. Fast delivery, easy returns, and free shipping over $60.</p>
+    <div class="cta enter" style="--rd:.3s"><a class="btn" href="#shop">Shop the collection</a><a class="btn ghost" href="#why">Why Nest</a></div>
+    <div class="proof enter" style="--rd:.45s"><span><i>Free</i> shipping $60+</span><span><i>30-day</i> returns</span><span><i>Secure</i> checkout</span></div>
+  </div>
+  <div class="stage enter" style="--rd:.3s" aria-hidden="true">
+    <div class="blob"></div>
+    <div class="it i1"><svg viewBox="0 0 100 100" data-art="vase"></svg></div>
+    <div class="it i2"><svg viewBox="0 0 100 100" data-art="lamp"></svg></div>
+    <div class="it i3"><svg viewBox="0 0 100 100" data-art="plant"></svg></div>
+    <div class="chip">Stock updates live</div>
+  </div>
+</div></div>
+<div class="mq" aria-hidden="true"><div><span>Vases</span><span>Lighting</span><span>Candles</span><span>Cushions</span><span>Kitchen</span><span>Plants</span><span>Decor</span><span>Gifts</span><span>Vases</span><span>Lighting</span><span>Candles</span><span>Cushions</span><span>Kitchen</span><span>Plants</span><span>Decor</span><span>Gifts</span></div></div>
+
+<section id="shop"><div class="wrap">
+  <div class="shophead"><h2 data-rv>New in the shop</h2><p class="lead" data-rv>Everything is in stock and ready to ship. Add to cart and watch the total update.</p></div>
+  <div class="cats" id="cats"></div>
+  <div class="grid" id="grid"></div>
+</div></section>
+
+<section id="why" class="dark"><div class="wrap">
+  <h2 data-rv style="text-align:center">Shopping, made simple</h2>
+  <div class="perks">
+    <div class="perk" data-rv><div class="ico"><svg viewBox="0 0 24 24"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="1.800"/><circle cx="17" cy="18" r="1.800"/></svg></div><h3>Fast delivery</h3><p>Orders leave our shelf the same day and arrive in 2 to 4 days.</p></div>
+    <div class="perk" data-rv><div class="ico"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5l2 2M20 12a8 8 0 0 1-14 5l-2-2M20 4v5h-5M4 20v-5h5"/></svg></div><h3>Easy returns</h3><p>Changed your mind? Send it back within 30 days, no questions.</p></div>
+    <div class="perk" data-rv><div class="ico"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div><h3>Secure payment</h3><p>Pay by card or cash on delivery. Your details stay private.</p></div>
+    <div class="perk" data-rv><div class="ico"><svg viewBox="0 0 24 24"><path d="M13 3 5 13h6l-1 8 8-10h-6z"/></svg></div><h3>Always in sync</h3><p>Stock and orders update by themselves, so you never sell what you do not have.</p></div>
+  </div>
+</div></section>
+
+<section id="news" style="padding-bottom:0"><div class="wrap">
+  <div class="final" data-rv>
+    <h2>Get 10% off your first order</h2>
+    <p>Join the list for new arrivals and quiet little offers. No spam, ever.</p>
+    <form class="sub" id="newsf"><input id="em" type="email" placeholder="you@example.com" aria-label="Email address" required><button class="btn white" type="submit">Join</button></form>
+  </div>
+</div></section>
+</main>
+<div class="wrap"><footer><span>© 2026 Nest &amp; Co (a fictional store)</span><span>Online store by <a href="../index.html">buildIt</a></span></footer></div>
+
+<div class="shade" id="shade"></div>
+<aside class="drawer" id="drawer" aria-label="Your cart">
+  <div class="dh"><h3>Your cart</h3><button type="button" id="close-cart" aria-label="Close cart">×</button></div>
+  <div id="cartbody" style="display:flex;flex-direction:column;flex:1;min-height:0">
+    <div class="ship" id="ship"></div>
+    <div class="items" id="items"></div>
+    <div class="df">
+      <div class="r"><span>Subtotal</span><span id="sub">$0</span></div>
+      <div class="r"><span>Shipping</span><span id="shp">$0</span></div>
+      <div class="r t"><span>Total</span><span id="tot">$0</span></div>
+      <button class="btn" id="checkout" type="button">Checkout</button>
+    </div>
+  </div>
+  <div class="ok" id="ok" hidden>
+    <div class="tick"><svg viewBox="0 0 24 24"><path d="M5 12.500l4.500 4.500L19 7.500"/></svg></div>
+    <h3>Order placed!</h3><p id="okline"></p>
+    <button class="btn" type="button" id="keep">Keep shopping</button>
+  </div>
+</aside>
+
+<script src="demo.js"></script>
+<script>
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const money = n => '$' + n.toFixed(2).replace(/\.00$/, '');
+  const FREE = 60, SHIP = 6;
+
+  // simple drawings for each product (no photos needed)
+  const art = {
+    vase: '<path d="M38 14h24l-3 12c14 8 16 40 2 58H39C25 66 27 34 41 26z" fill="#fff" opacity=".96"/><path d="M38 14h24" stroke="#3a2418" stroke-width="5" stroke-linecap="round"/><path d="M37 52c8 6 18 6 26 0" stroke="#c4502c" stroke-width="4" fill="none" stroke-linecap="round"/>',
+    lamp: '<path d="M30 16h40l12 30H18z" fill="#c4502c"/><rect x="47" y="46" width="6" height="30" fill="#3a2418"/><ellipse cx="50" cy="82" rx="18" ry="5" fill="#3a2418"/><circle cx="50" cy="54" r="4" fill="#ffd9b0"/>',
+    plant: '<path d="M50 52c-14-6-18-22-14-34 14 4 20 18 14 34zM50 52c14-6 18-22 14-34-14 4-20 18-14 34z" fill="#3ac98a"/><path d="M50 52V40" stroke="#1f9d68" stroke-width="3" stroke-linecap="round"/><path d="M28 54h44l-6 32H34z" fill="#fff" opacity=".96"/><path d="M28 54h44" stroke="#c4502c" stroke-width="5" stroke-linecap="round"/>',
+    mug: '<path d="M24 28h44v34c0 12-8 20-22 20S24 74 24 62z" fill="#fff" opacity=".96"/><path d="M68 36h8a10 10 0 0 1 0 22h-8" stroke="#fff" stroke-width="6" fill="none" opacity=".96"/><path d="M24 40h44" stroke="#c4502c" stroke-width="5"/><path d="M36 14c-4 4 4 6 0 10M48 14c-4 4 4 6 0 10M60 14c-4 4 4 6 0 10" stroke="#3a2418" stroke-width="3" fill="none" stroke-linecap="round"/>',
+    cushion: '<path d="M16 28c12-6 56-6 68 0 4 14 4 30 0 44-12 6-56 6-68 0-4-14-4-30 0-44z" fill="#c4502c"/><path d="M26 36l48 28M74 36L26 64" stroke="#fff" stroke-width="3" opacity=".6" stroke-linecap="round"/><circle cx="50" cy="50" r="4" fill="#fff"/>',
+    candle: '<rect x="30" y="42" width="40" height="42" rx="8" fill="#fff" opacity=".96"/><rect x="30" y="52" width="40" height="8" fill="#ffd9b0"/><path d="M50 42V32" stroke="#3a2418" stroke-width="3" stroke-linecap="round"/><path d="M50 12c8 8 8 14 0 18-8-4-8-10 0-18z" fill="#ffb347"/>',
+    clock: '<circle cx="50" cy="50" r="34" fill="#fff" opacity=".96"/><circle cx="50" cy="50" r="34" fill="none" stroke="#c4502c" stroke-width="6"/><path d="M50 28v22l14 8" stroke="#3a2418" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="50" r="3" fill="#3a2418"/>',
+    bowl: '<path d="M14 42h72c0 24-14 40-36 40S14 66 14 42z" fill="#fff" opacity=".96"/><path d="M14 42h72" stroke="#3a2418" stroke-width="5" stroke-linecap="round"/><path d="M30 58c10 6 30 6 40 0" stroke="#c4502c" stroke-width="4" fill="none" stroke-linecap="round"/><rect x="38" y="82" width="24" height="5" rx="2.500" fill="#3a2418"/>'
+  };
+  document.querySelectorAll('[data-art]').forEach(s => { s.innerHTML = art[s.dataset.art]; });
+  const tint = ['#f9e0cf', '#fbe9c6', '#e3efd9', '#f4dcd4', '#efe2cf', '#f6e7b8'];
+
+  const products = [
+    { id: 1, n: 'Arch vase', d: 'Hand-glazed ceramic', c: 'Decor', p: 34, was: 42, st: 8, art: 'vase', b: 'Sale' },
+    { id: 2, n: 'Dome table lamp', d: 'Warm light, touch dimmer', c: 'Lighting', p: 58, st: 5, art: 'lamp' },
+    { id: 3, n: 'Trailing plant pot', d: 'Matte stoneware, drainage', c: 'Plants', p: 22, st: 14, art: 'plant', b: 'New' },
+    { id: 4, n: 'Morning mug', d: 'Set of two, 350 ml', c: 'Kitchen', p: 18, st: 20, art: 'mug' },
+    { id: 5, n: 'Linen cushion', d: 'Soft cotton-linen blend', c: 'Decor', p: 27, st: 3, art: 'cushion' },
+    { id: 6, n: 'Soy candle', d: 'Burns for 40 hours', c: 'Decor', p: 16, st: 25, art: 'candle', b: 'New' },
+    { id: 7, n: 'Round wall clock', d: 'Silent, 30 cm', c: 'Decor', p: 39, was: 48, st: 6, art: 'clock', b: 'Sale' },
+    { id: 8, n: 'Serving bowl', d: 'Oven and dishwasher safe', c: 'Kitchen', p: 29, st: 11, art: 'bowl' }
+  ];
+  const cats = ['All', 'Decor', 'Lighting', 'Kitchen', 'Plants'];
+  const cart = {}; // id -> qty
+  let cat = 'All';
+  const left = p => p.st - (cart[p.id] || 0);
+
+  cats.forEach(c => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'pill'; b.textContent = c; b.setAttribute('aria-pressed', c === 'All');
+    b.onclick = () => { cat = c; Array.from($('cats').children).forEach(x => x.setAttribute('aria-pressed', x === b)); drawGrid(); };
+    $('cats').appendChild(b);
+  });
+
+  function drawGrid() {
+    const g = $('grid'); g.innerHTML = '';
+    products.filter(p => cat === 'All' || p.c === cat).forEach((p, i) => {
+      const l = left(p), card = document.createElement('div'); card.className = 'card prod'; card.style.animationDelay = i * 0.05 + 's';
+      const badge = l <= 0 ? '<span class="badge low">Sold out</span>' : l <= 3 ? '<span class="badge low">Only ' + l + ' left</span>' : p.b ? '<span class="badge">' + p.b + '</span>' : '';
+      card.innerHTML = '<div class="pic" style="background:' + tint[p.id % tint.length] + '">' + badge + '<svg viewBox="0 0 100 100">' + art[p.art] + '</svg></div>' +
+        '<div class="pbody"><h3>' + p.n + '</h3><p>' + p.d + '</p><div class="stock">' + (l > 0 ? l + ' in stock' : 'Back soon') + '</div>' +
+        '<div class="pfoot"><span class="price">' + money(p.p) + (p.was ? '<s>' + money(p.was) + '</s>' : '') + '</span><button class="btn add" type="button"' + (l <= 0 ? ' disabled' : '') + '>' + (l <= 0 ? 'Sold out' : 'Add to cart') + '</button></div></div>';
+      card.querySelector('.add').onclick = () => add(p);
+      g.appendChild(card);
+    });
+  }
+
+  function add(p) {
+    if (left(p) <= 0) return;
+    cart[p.id] = (cart[p.id] || 0) + 1;
+    const b = $('open-cart'); b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump');
+    window.toast(p.n + ' added to your cart');
+    drawGrid(); drawCart();
+  }
+
+  function drawCart() {
+    const ids = Object.keys(cart).filter(k => cart[k] > 0);
+    const n = ids.reduce((t, k) => t + cart[k], 0);
+    $('count').textContent = n;
+    const sub = ids.reduce((t, k) => t + cart[k] * products.find(p => p.id == k).p, 0);
+    const shp = !n ? 0 : sub >= FREE ? 0 : SHIP;
+    $('sub').textContent = money(sub); $('shp').textContent = !n ? '$0' : shp ? money(shp) : 'Free'; $('tot').textContent = money(sub + shp);
+    $('ship').innerHTML = sub >= FREE ? '🎉 You have <b style="font-weight:500">free shipping</b>!<div class="meter"><i style="width:100%"></i></div>'
+      : 'Add <b style="font-weight:500">' + money(FREE - sub) + '</b> more for free shipping<div class="meter"><i style="width:' + Math.min(100, sub / FREE * 100) + '%"></i></div>';
+    $('checkout').disabled = !n;
+    const box = $('items'); box.innerHTML = '';
+    if (!n) { box.innerHTML = '<div class="empty">Your cart is empty.<br>Add something you like.</div>'; return; }
+    ids.forEach(k => {
+      const p = products.find(x => x.id == k), q = cart[k], row = document.createElement('div'); row.className = 'line';
+      row.innerHTML = '<div class="th" style="background:' + tint[p.id % tint.length] + '"><svg viewBox="0 0 100 100">' + art[p.art] + '</svg></div>' +
+        '<div><b>' + p.n + '</b><small>' + money(p.p) + ' each</small><div class="qty"><button type="button" aria-label="Fewer">−</button><span>' + q + '</span><button type="button" aria-label="More">+</button></div></div>' +
+        '<div class="lp">' + money(p.p * q) + '<button class="rm" type="button">Remove</button></div>';
+      const [minus, plus] = row.querySelectorAll('.qty button');
+      minus.onclick = () => { cart[k]--; drawGrid(); drawCart(); };
+      plus.onclick = () => { if (left(p) > 0) { cart[k]++; drawGrid(); drawCart(); } else window.toast('That is all we have in stock'); };
+      row.querySelector('.rm').onclick = () => { cart[k] = 0; drawGrid(); drawCart(); };
+      box.appendChild(row);
+    });
+  }
+
+  // drawer open / close
+  const open = on => document.body.classList.toggle('cart-open', on);
+  $('open-cart').onclick = () => open(true);
+  $('close-cart').onclick = $('shade').onclick = () => open(false);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') open(false); });
+
+  // checkout: stock is really reduced, like a real store
+  $('checkout').onclick = () => {
+    const total = $('tot').textContent, n = $('count').textContent;
+    Object.keys(cart).forEach(k => { const p = products.find(x => x.id == k); p.st -= cart[k]; cart[k] = 0; });
+    $('okline').textContent = n + (n == 1 ? ' item' : ' items') + ' for ' + total + '. A confirmation email is on its way, and the stock above is already updated.';
+    $('cartbody').style.display = 'none'; $('ok').hidden = false;
+    drawGrid(); drawCart();
+  };
+  $('keep').onclick = () => { $('ok').hidden = true; $('cartbody').style.display = 'flex'; open(false); };
+
+  $('newsf').onsubmit = e => { e.preventDefault(); $('em').value = ''; window.toast('Welcome! Your 10% code is on its way.'); };
+
+  drawGrid(); drawCart();
+})();
+</script>
+</body>
+</html>

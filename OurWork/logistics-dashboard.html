@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RouteLine – every shipment on one screen</title>
+<meta name="description" content="Sample project by buildIt: a logistics dashboard with live shipments, drivers, and delay alerts.">
+<meta name="theme-color" content="#ff7a1a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23ff7a1a'/%3E%3Cpath d='M9 28l8-10 6 6 8-12' stroke='white' stroke-width='4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="demo.css">
+<style>
+/* THEME: this demo's own colors and fonts */
+:root{--rgb:255,122,26;--bg:#0b1020;--surface:#141b33;--ink:#e9eeff;--muted:#8f9cc4;--line:#26325a;--blue:#ff7a1a;--onblue:#1b0e00;--sun:#ffc38a;--dark:#151d42;--b1:#ffb36b;--b2:#ff6a00;--bd1:#2a3670;--bd2:#121a3d;--fh:"Space Grotesk",system-ui,sans-serif;--fb:"Inter",system-ui,sans-serif;color-scheme:dark}
+.aurora i{opacity:.17}
+.kpi:nth-child(1){background:linear-gradient(150deg,#ffa047,#ff6a00)!important;color:#1b0e00!important}
+.kpi:nth-child(1) small,.kpi:nth-child(1) em{color:#4a2200!important}
+.side{background:linear-gradient(170deg,#1c2556,#0d1332)}
+.map{background:#0e1530}
+</style>
+<style>
+.app { display: grid; grid-template-columns: 230px 1fr; min-height: calc(100vh - 38px); }
+.side { position: sticky; top: 38px; align-self: start; height: calc(100vh - 38px); padding: 22px 16px; color: #fff; display: flex; flex-direction: column; gap: 6px; background: linear-gradient(170deg, var(--bd1), var(--bd2)); overflow: hidden; }
+.side::before { content: ""; position: absolute; width: 320px; height: 320px; left: -120px; bottom: -140px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,.3), transparent 68%); animation: drift 16s ease-in-out infinite alternate; }
+@keyframes drift { to { transform: translate(60px, -40px) scale(1.25); } }
+.side > * { position: relative; }
+.logo { font: 800 24px var(--fh); display: flex; align-items: center; gap: 9px; margin: 2px 8px 22px; }
+.logo svg { width: 34px; height: 34px; }
+.side a.nv { display: flex; align-items: center; gap: 11px; padding: 11px 14px; border-radius: 12px; text-decoration: none; font-size: 15px; font-weight: 500; color: #c5cdf0; transition: background .2s, transform .2s; }
+.side a.nv:hover { background: rgba(255,255,255,.14); transform: translateX(4px); }
+.side a.nv.on { background: rgba(255,255,255,.22); color: #fff; }
+.side a.nv svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.side .me { margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 14px; background: rgba(255,255,255,.14); font-size: 14px; }
+.side .me i { width: 34px; height: 34px; border-radius: 50%; background: #fff; color: var(--bd2); display: grid; place-items: center; font: 800 14px var(--fh); font-style: normal; }
+.side .me small { display: block; opacity: .8; }
+
+.main { padding: 26px 28px 60px; min-width: 0; }
+.top { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 22px; }
+.top h1 { font-size: clamp(28px, 3.4vw, 40px); font-weight: 800; }
+.top p { margin: 4px 0 0; color: var(--muted); font-size: 15px; }
+.live { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; padding: 8px 16px; border-radius: 99px; background: var(--surface); border: 1.5px solid var(--line); }
+.live::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: #3ac98a; box-shadow: 0 0 0 0 rgba(58,201,138,.6); animation: ping 1.8s ease-out infinite; }
+@keyframes ping { to { box-shadow: 0 0 0 10px rgba(58,201,138,0); } }
+
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; margin-bottom: 18px; }
+.kpi { padding: 20px 22px; border-radius: 20px; }
+.kpi small { color: var(--muted); font-size: 14px; }
+.kpi strong { display: block; font: 800 34px var(--fh); letter-spacing: -.03em; margin: 4px 0 2px; }
+.kpi em { font-style: normal; font-size: 13px; font-weight: 500; color: #1f9d68; }
+.kpi em.bad { color: #d6454a; }
+.kpi:nth-child(1) { background: linear-gradient(150deg, var(--bd1), var(--bd2)); color: #fff; border: 0; }
+.kpi:nth-child(1) small { color: #c5cdf0; } .kpi:nth-child(1) em { color: #d6ffe9; }
+
+.row { display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px; margin-bottom: 16px; }
+.box { background: var(--surface); border: 1.5px solid var(--line); border-radius: 22px; padding: 22px; box-shadow: 0 18px 40px -30px rgba(var(--rgb),.5); min-width: 0; }
+.box h3 { font-size: 20px; margin-bottom: 4px; }
+.box .sub { color: var(--muted); font-size: 14px; margin-bottom: 14px; }
+.map { position: relative; border-radius: 16px; overflow: hidden; background: color-mix(in srgb, var(--blue) 6%, var(--bg)); border: 1.5px solid var(--line); }
+.map svg { display: block; width: 100%; height: auto; }
+.map .rd { fill: none; stroke: var(--line); stroke-width: 10; stroke-linecap: round; }
+.map .rt { fill: none; stroke: var(--blue); stroke-width: 3; stroke-dasharray: 6 8; stroke-linecap: round; animation: dash 1.4s linear infinite; opacity: .6; }
+@keyframes dash { to { stroke-dashoffset: -28; } }
+.map .hub { fill: var(--ink); }
+.map text { font: 500 12px var(--fb); fill: var(--muted); }
+.truck { fill: var(--blue); stroke: #fff; stroke-width: 3; }
+.truck.late { fill: #e5484d; }
+
+.bars { display: flex; align-items: flex-end; gap: 10px; height: 190px; padding-top: 8px; }
+.bars div { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 8px; height: 100%; font-size: 13px; color: var(--muted); }
+.bars i { display: block; width: 100%; border-radius: 8px 8px 0 0; height: 0; background: linear-gradient(180deg, var(--b1), var(--blue)); transition: height 1s cubic-bezier(.2,.8,.2,1); position: relative; }
+.bars i b { position: absolute; top: -22px; left: 0; right: 0; text-align: center; font-size: 12px; font-weight: 500; color: var(--ink); }
+.bars div.today i { background: linear-gradient(180deg, #8fa3ff, var(--bd2)); }
+.on-time { display: flex; align-items: center; gap: 18px; margin-top: 20px; padding-top: 18px; border-top: 1px dashed var(--line); }
+.ring { --v: 0; width: 76px; height: 76px; border-radius: 50%; flex: none; display: grid; place-items: center; background: conic-gradient(var(--blue) calc(var(--v) * 1%), var(--line) 0); transition: --v 1s; }
+.ring span { width: 58px; height: 58px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); font: 800 17px var(--fh); }
+
+.tools { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+.tools input { flex: 1; min-width: 180px; padding: 11px 16px; font: 400 15px var(--fb); color: var(--ink); border-radius: 99px; border: 1.5px solid var(--line); background: color-mix(in srgb, var(--blue) 5%, var(--bg)); }
+.tools input:focus { outline: 0; border-color: var(--blue); box-shadow: 0 0 0 4px color-mix(in srgb, var(--blue) 18%, transparent); }
+.pill { font: 500 14px var(--fb); color: var(--ink); cursor: pointer; padding: 8px 15px; border-radius: 99px; border: 1.5px solid var(--line); background: var(--surface); transition: transform .15s, border-color .2s; }
+.pill:hover { transform: translateY(-2px); border-color: var(--blue); }
+.pill[aria-pressed="true"] { background: var(--blue); border-color: var(--blue); color: var(--onblue); }
+.tw { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 15px; min-width: 620px; }
+th { text-align: left; font-weight: 500; font-size: 13px; color: var(--muted); padding: 8px 12px; border-bottom: 1.5px solid var(--line); }
+td { padding: 13px 12px; border-bottom: 1px solid var(--line); }
+tbody tr { cursor: pointer; transition: background .2s; animation: rowin .45s ease both; }
+tbody tr:hover, tbody tr.sel { background: color-mix(in srgb, var(--blue) 7%, var(--surface)); }
+@keyframes rowin { from { opacity: 0; transform: translateY(8px); } }
+td b { font-weight: 500; }
+td small { display: block; color: var(--muted); font-size: 13px; }
+.st { display: inline-block; font-size: 13px; font-weight: 500; padding: 4px 12px; border-radius: 99px; }
+.st.transit { background: color-mix(in srgb, var(--blue) 14%, var(--surface)); color: var(--blue); }
+.st.done { background: color-mix(in srgb, #3ac98a 18%, var(--surface)); color: #1f9d68; }
+.st.late { background: color-mix(in srgb, #e5484d 15%, var(--surface)); color: #d6454a; }
+.st.wait { background: color-mix(in srgb, #f2a93b 20%, var(--surface)); color: #b57614; }
+.prog { height: 6px; border-radius: 6px; background: var(--line); overflow: hidden; min-width: 80px; }
+.prog i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--b1), var(--blue)); }
+.none { text-align: center; color: var(--muted); padding: 26px; }
+
+.detail { margin-top: 14px; border-radius: 18px; padding: 20px; background: color-mix(in srgb, var(--blue) 6%, var(--surface)); border: 1.5px solid color-mix(in srgb, var(--blue) 30%, var(--line)); animation: pop .35s cubic-bezier(.3,1.4,.5,1); }
+.detail h4 { margin: 0 0 12px; font: 800 20px var(--fh); letter-spacing: -.02em; }
+.track { display: flex; gap: 0; margin: 6px 0 4px; }
+.track div { flex: 1; text-align: center; font-size: 13px; color: var(--muted); position: relative; padding-top: 24px; }
+.track div::before { content: ""; position: absolute; top: 6px; left: 50%; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: var(--line); z-index: 1; }
+.track div::after { content: ""; position: absolute; top: 12px; left: -50%; width: 100%; height: 3px; background: var(--line); }
+.track div:first-child::after { display: none; }
+.track div.on { color: var(--ink); font-weight: 500; }
+.track div.on::before, .track div.on::after { background: var(--blue); }
+
+.feed { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; max-height: 330px; overflow: hidden; }
+.feed li { display: flex; gap: 12px; padding: 11px 14px; border-radius: 14px; font-size: 14.5px; background: color-mix(in srgb, var(--blue) 5%, var(--surface)); animation: pop .4s cubic-bezier(.3,1.4,.5,1); }
+.feed li i { flex: none; width: 10px; height: 10px; border-radius: 50%; margin-top: 7px; background: var(--blue); }
+.feed li.warn i { background: #e5484d; } .feed li.ok i { background: #3ac98a; }
+.feed li small { display: block; color: var(--muted); font-size: 12.5px; }
+.drivers { display: grid; gap: 10px; }
+.drv { display: flex; align-items: center; gap: 12px; }
+.drv i { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font: 800 14px var(--fh); font-style: normal; color: #fff; background: linear-gradient(135deg, var(--b1), var(--b2)); }
+.drv div { flex: 1; font-size: 15px; font-weight: 500; }
+.drv small { display: block; color: var(--muted); font-weight: 400; font-size: 13px; }
+
+@media (max-width: 960px) {
+  .app { grid-template-columns: 1fr; }
+  .side { position: static; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; padding: 12px 14px; }
+  .side::before, .side .me { display: none; }
+  .logo { margin: 0 12px 0 0; }
+  .side a.nv { padding: 8px 12px; } .side a.nv:hover { transform: none; }
+  .row { grid-template-columns: 1fr; }
+  .main { padding: 22px 16px 60px; }
+}
+</style>
+</head>
+<body>
+<div class="demo-bar"><span>This is a sample project built by buildIt. The numbers are made up, but everything here works.</span><div class="r"><a href="../index.html#work">← Back to buildIt</a><a href="../index.html#contact">Start yours</a></div></div>
+
+<div class="app">
+  <aside class="side">
+    <div class="logo"><svg viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="10" fill="#fff"/><path d="M9 28l8-10 6 6 8-12" stroke="#ff7a1a" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>RouteLine</div>
+    <a class="nv on" href="#top"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/></svg>Overview</a>
+    <a class="nv" href="#map"><svg viewBox="0 0 24 24"><path d="M12 21s-6-5.500-6-11a6 6 0 0 1 12 0c0 5.500-6 11-6 11z"/><circle cx="12" cy="10" r="2"/></svg>Live map</a>
+    <a class="nv" href="#ship"><svg viewBox="0 0 24 24"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="1.800"/><circle cx="17" cy="18" r="1.800"/></svg>Shipments</a>
+    <a class="nv" href="#team"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.500"/><path d="M3 20a6 6 0 0 1 12 0M16 5a3.500 3.500 0 0 1 0 6.500M18 14a6 6 0 0 1 3 6"/></svg>Drivers</a>
+    <div class="me"><i>AM</i><div>Amira M.<small>Dispatch lead</small></div></div>
+  </aside>
+
+  <main class="main" id="top">
+    <div class="top enter">
+      <div><h1>Good morning, team</h1><p>Every shipment, driver, and delay on one screen.</p></div>
+      <span class="live" id="clock">Live</span>
+    </div>
+
+    <div class="kpis">
+      <div class="card kpi" data-rv><small>Active shipments</small><strong id="k-active" data-count="0">0</strong><em>▲ 12 since yesterday</em></div>
+      <div class="card kpi" data-rv><small>Delivered today</small><strong id="k-done">0</strong><em>▲ 8% vs last week</em></div>
+      <div class="card kpi" data-rv><small>Delayed</small><strong id="k-late">0</strong><em class="bad" id="k-late-n">Needs attention</em></div>
+      <div class="card kpi" data-rv><small>Drivers on the road</small><strong id="k-drv">0</strong><em>of 12 total</em></div>
+    </div>
+
+    <div class="row" id="map">
+      <div class="box" data-rv>
+        <h3>Live map</h3><div class="sub">Trucks move in real time. Red means delayed.</div>
+        <div class="map">
+          <svg viewBox="0 0 640 330" role="img" aria-label="Map with moving delivery trucks">
+            <path class="rd" d="M60 80 C180 60 260 140 340 120 S520 50 590 90"/>
+            <path class="rd" d="M60 80 C120 170 200 250 320 250 S520 240 580 270"/>
+            <path class="rd" d="M340 120 C350 190 330 220 320 250"/>
+            <path class="rd" d="M590 90 C600 160 590 220 580 270"/>
+            <path class="rd" d="M140 300 C200 280 260 270 320 250"/>
+            <path class="rt" id="r1" d="M60 80 C180 60 260 140 340 120 S520 50 590 90"/>
+            <path class="rt" id="r2" d="M60 80 C120 170 200 250 320 250 S520 240 580 270"/>
+            <path class="rt" id="r3" d="M340 120 C350 190 330 220 320 250"/>
+            <path class="rt" id="r4" d="M590 90 C600 160 590 220 580 270"/>
+            <path class="rt" id="r5" d="M140 300 C200 280 260 270 320 250"/>
+            <circle class="hub" cx="60" cy="80" r="9"/><text x="72" y="70">Main hub</text>
+            <circle class="hub" cx="340" cy="120" r="6"/><text x="350" y="110">Cairo East</text>
+            <circle class="hub" cx="590" cy="90" r="6"/><text x="520" y="78">Alexandria</text>
+            <circle class="hub" cx="320" cy="250" r="6"/><text x="330" y="270">Giza</text>
+            <circle class="hub" cx="580" cy="270" r="6"/><text x="520" y="298">Suez</text>
+            <circle class="hub" cx="140" cy="300" r="5"/><text x="152" y="318">Port</text>
+            <g id="trucks"></g>
+          </svg>
+        </div>
+      </div>
+      <div class="box" data-rv>
+        <h3>Deliveries this week</h3><div class="sub">Completed shipments per day</div>
+        <div class="bars" id="bars"></div>
+        <div class="on-time"><div class="ring" id="ring"><span id="ringv">0%</span></div><div><b style="font-weight:500">On-time rate</b><div class="sub" style="margin:0">Shipments delivered within the promised window.</div></div></div>
+      </div>
+    </div>
+
+    <div class="box" id="ship" data-rv style="margin-bottom:16px">
+      <h3>Shipments</h3><div class="sub">Search, filter, and click any row for details.</div>
+      <div class="tools">
+        <input id="q" type="search" placeholder="Search by ID, customer, or city" aria-label="Search shipments">
+        <button class="pill" data-f="all" aria-pressed="true">All</button>
+        <button class="pill" data-f="transit" aria-pressed="false">In transit</button>
+        <button class="pill" data-f="late" aria-pressed="false">Delayed</button>
+        <button class="pill" data-f="done" aria-pressed="false">Delivered</button>
+        <button class="pill" data-f="wait" aria-pressed="false">Waiting</button>
+      </div>
+      <div class="tw"><table><thead><tr><th>Shipment</th><th>Route</th><th>Driver</th><th>Progress</th><th>Status</th></tr></thead><tbody id="tb"></tbody></table></div>
+      <div id="detail"></div>
+    </div>
+
+    <div class="row" id="team" style="grid-template-columns:1fr 1fr">
+      <div class="box" data-rv><h3>Live activity</h3><div class="sub">New events appear here as they happen.</div><ul class="feed" id="feed"></ul></div>
+      <div class="box" data-rv><h3>Drivers</h3><div class="sub">Who is out and how they are doing.</div><div class="drivers" id="drv"></div></div>
+    </div>
+  </main>
+</div>
+
+<script src="demo.js"></script>
+<script>
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const label = { transit: 'In transit', late: 'Delayed', done: 'Delivered', wait: 'Waiting' };
+  const ship = [
+    { id: 'RL-4821', c: 'Nile Pharma', a: 'Main hub', b: 'Alexandria', d: 'Omar K.', p: 72, s: 'transit' },
+    { id: 'RL-4822', c: 'Delta Foods', a: 'Main hub', b: 'Suez', d: 'Hany S.', p: 45, s: 'transit' },
+    { id: 'RL-4823', c: 'Cairo Textiles', a: 'Cairo East', b: 'Giza', d: 'Salma R.', p: 88, s: 'transit' },
+    { id: 'RL-4824', c: 'Orbit Retail', a: 'Port', b: 'Giza', d: 'Youssef A.', p: 30, s: 'late' },
+    { id: 'RL-4825', c: 'Sunrise Hotels', a: 'Main hub', b: 'Cairo East', d: 'Mona T.', p: 100, s: 'done' },
+    { id: 'RL-4826', c: 'Alex Electronics', a: 'Alexandria', b: 'Suez', d: 'Karim F.', p: 100, s: 'done' },
+    { id: 'RL-4827', c: 'Green Grocers', a: 'Giza', b: 'Main hub', d: 'Nour E.', p: 0, s: 'wait' },
+    { id: 'RL-4828', c: 'Pharaoh Furniture', a: 'Main hub', b: 'Giza', d: 'Omar K.', p: 58, s: 'late' },
+    { id: 'RL-4829', c: 'Bluewave Café', a: 'Cairo East', b: 'Alexandria', d: 'Hany S.', p: 64, s: 'transit' },
+    { id: 'RL-4830', c: 'Studio Nine', a: 'Suez', b: 'Port', d: 'Salma R.', p: 100, s: 'done' },
+    { id: 'RL-4831', c: 'Tahrir Books', a: 'Main hub', b: 'Cairo East', d: 'Mona T.', p: 0, s: 'wait' },
+    { id: 'RL-4832', c: 'Oasis Cosmetics', a: 'Giza', b: 'Suez', d: 'Karim F.', p: 22, s: 'transit' }
+  ];
+  const drivers = [['Omar K.', 'OK', 'On route to Alexandria'], ['Hany S.', 'HS', 'On route to Suez'], ['Salma R.', 'SR', 'Delivering in Giza'], ['Youssef A.', 'YA', 'Delayed: traffic at Port'], ['Mona T.', 'MT', 'Back at hub']];
+
+  // ----- map trucks: follow the route paths using SVG animateMotion -----
+  const NS = 'http://www.w3.org/2000/svg';
+  [['r1', 16, 0, false], ['r2', 22, -6, false], ['r3', 10, -3, false], ['r4', 12, -8, true], ['r5', 11, -2, false], ['r1', 19, -11, false]].forEach(([r, dur, begin, late]) => {
+    const c = document.createElementNS(NS, 'circle');
+    c.setAttribute('r', 9); c.setAttribute('class', 'truck' + (late ? ' late' : ''));
+    const m = document.createElementNS(NS, 'animateMotion');
+    m.setAttribute('dur', dur + 's'); m.setAttribute('begin', begin + 's'); m.setAttribute('repeatCount', 'indefinite');
+    const mp = document.createElementNS(NS, 'mpath'); mp.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#' + r); mp.setAttribute('href', '#' + r);
+    m.appendChild(mp); c.appendChild(m); $('trucks').appendChild(c);
+  });
+
+  // ----- KPIs -----
+  function kpis() {
+    const n = s => ship.filter(x => x.s === s).length;
+    $('k-active').textContent = n('transit') + n('late') + 37;
+    $('k-done').textContent = n('done') + 41;
+    $('k-late').textContent = n('late');
+    $('k-late-n').textContent = n('late') ? 'Needs attention' : 'All on time';
+    $('k-drv').textContent = 9;
+  }
+
+  // ----- weekly bars + ring -----
+  const week = [['Sat', 58], ['Sun', 64], ['Mon', 72], ['Tue', 69], ['Wed', 81], ['Thu', 77], ['Fri', 49]];
+  const max = Math.max(...week.map(w => w[1]));
+  week.forEach((w, i) => {
+    const d = document.createElement('div'); if (i === 4) d.className = 'today';
+    d.innerHTML = '<i data-h="' + Math.round(w[1] / max * 100) + '"><b>' + w[1] + '</b></i>' + w[0];
+    $('bars').appendChild(d);
+  });
+  requestAnimationFrame(() => setTimeout(() => {
+    document.querySelectorAll('.bars i').forEach(i => { i.style.height = (i.dataset.h * 0.78) + '%'; });
+    let v = 0; const t = setInterval(() => { v += 2; $('ring').style.setProperty('--v', v); $('ringv').textContent = v + '%'; if (v >= 94) clearInterval(t); }, 20);
+  }, 400));
+
+  // ----- shipments table -----
+  let filter = 'all', query = '', selected = null;
+  function drawTable() {
+    const rows = ship.filter(s => (filter === 'all' || s.s === filter) && (s.id + s.c + s.a + s.b + s.d).toLowerCase().includes(query));
+    const tb = $('tb'); tb.innerHTML = '';
+    if (!rows.length) { tb.innerHTML = '<tr><td colspan="5" class="none">No shipments match.</td></tr>'; return; }
+    rows.forEach((s, i) => {
+      const tr = document.createElement('tr'); tr.style.animationDelay = i * 0.04 + 's'; if (selected === s.id) tr.className = 'sel';
+      tr.innerHTML = '<td><b>' + s.id + '</b><small>' + s.c + '</small></td><td>' + s.a + ' → ' + s.b + '</td><td>' + s.d + '</td><td><div class="prog"><i style="width:' + s.p + '%"></i></div></td><td><span class="st ' + s.s + '">' + label[s.s] + '</span></td>';
+      tr.onclick = () => { selected = selected === s.id ? null : s.id; drawTable(); drawDetail(); };
+      tb.appendChild(tr);
+    });
+  }
+  function drawDetail() {
+    const box = $('detail'); box.innerHTML = '';
+    const s = ship.find(x => x.id === selected); if (!s) return;
+    const stage = s.s === 'done' ? 4 : s.s === 'wait' ? 1 : s.p > 60 ? 3 : 2;
+    const names = ['Order placed', 'Picked up', 'On the road', 'Delivered'];
+    const d = document.createElement('div'); d.className = 'detail';
+    d.innerHTML = '<h4>' + s.id + ' · ' + s.c + '</h4><div class="track">' + names.map((n, i) => '<div class="' + (i < stage ? 'on' : '') + '">' + n + '</div>').join('') + '</div>' +
+      '<p style="margin:14px 0 0;color:var(--muted);font-size:15px">' + s.a + ' → ' + s.b + ' · Driver ' + s.d + ' · ' + s.p + '% of the route done' + (s.s === 'late' ? ' · <b style="color:#d6454a;font-weight:500">Delayed, customer has been notified</b>' : '') + '</p>';
+    box.appendChild(d);
+  }
+  $('q').oninput = e => { query = e.target.value.trim().toLowerCase(); drawTable(); };
+  document.querySelectorAll('.pill').forEach(p => p.onclick = () => {
+    filter = p.dataset.f; document.querySelectorAll('.pill').forEach(o => o.setAttribute('aria-pressed', o === p)); drawTable();
+  });
+
+  // ----- drivers -----
+  drivers.forEach(d => {
+    const e = document.createElement('div'); e.className = 'drv';
+    e.innerHTML = '<i>' + d[1] + '</i><div>' + d[0] + '<small>' + d[2] + '</small></div><span class="st ' + (d[2].startsWith('Delayed') ? 'late' : d[2].startsWith('Back') ? 'wait' : 'transit') + '">' + (d[2].startsWith('Delayed') ? 'Delayed' : d[2].startsWith('Back') ? 'Idle' : 'Driving') + '</span>';
+    $('drv').appendChild(e);
+  });
+
+  // ----- live activity feed -----
+  const events = [
+    ['ok', 'RL-4823 reached Giza', 'Omar K. · customer notified'], ['warn', 'RL-4824 delayed by 25 min', 'Traffic near the port · customer notified'],
+    ['ok', 'RL-4825 delivered', 'Signed by reception'], ['', 'RL-4827 assigned to Nour E.', 'Pickup at 2:30 PM'],
+    ['ok', 'RL-4830 delivered', 'Photo proof saved'], ['', 'New order RL-4833 received', 'Auto-assigned to the nearest driver'],
+    ['warn', 'RL-4828 running late', 'Reroute suggested, dispatcher alerted'], ['ok', 'Invoice for RL-4826 sent', 'Sent automatically']
+  ];
+  let ei = 0;
+  function pushEvent() {
+    const e = events[ei++ % events.length], li = document.createElement('li');
+    if (e[0]) li.className = e[0];
+    li.innerHTML = '<i></i><div>' + e[1] + '<small>' + e[2] + ' · just now</small></div>';
+    const f = $('feed'); f.insertBefore(li, f.firstChild);
+    while (f.children.length > 5) f.removeChild(f.lastChild);
+  }
+  for (let i = 0; i < 4; i++) pushEvent();
+  setInterval(pushEvent, 4500);
+
+  // ----- small live changes: progress creeps forward, clock ticks -----
+  setInterval(() => {
+    ship.forEach(s => { if (s.s === 'transit' || s.s === 'late') { s.p = Math.min(100, s.p + 1); if (s.p === 100) s.s = 'done'; } });
+    kpis(); drawTable(); drawDetail();
+  }, 6000);
+  const tick = () => { $('clock').textContent = 'Live · ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); };
+  tick(); setInterval(tick, 15000);
+
+  kpis(); drawTable();
+  document.querySelectorAll('.kpi strong').forEach(el => { const to = +el.textContent; el.dataset.count = to; el.textContent = '0'; });
+})();
+</script>
+</body>
+</html>
